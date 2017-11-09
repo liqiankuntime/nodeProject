@@ -17,6 +17,8 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 
+.idea/
+
 # nyc test coverage
 .nyc_output
 
@@ -57,3 +59,6 @@ typings/
 # dotenv environment variables file
 .env
 
+.idea/modules.xml
+.idea/nodeProject.iml
+.idea/workspace.xml
