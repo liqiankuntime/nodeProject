@@ -7,6 +7,8 @@ const config = require('../config/defaultConfig');
 const mime = require('./mime');
 const Handlebars = require('handlebars');
 const compress = require('./compress');
+const range = require('./range');
+const isFresh = require('./catch');
 
 const tplPath = path.join(__dirname,'../template/dir');//__dirname:/Users/liqiankun/newHbuilderProjects/nodeProject/src/helper 获取当前文件的路径； 拼接成绝对路径
 const source = fs.readFileSync(tplPath);//默认获取的数据是buffer类型   fs.readFileSync(tplPath,'utf-8')
@@ -25,9 +27,23 @@ module.exports = function (req,res,filePath) {
 			if(data.isFile()){
 				const contentType = mime(filePath);
 				//res.writeHead(200,{'Content-Type':contentType})
-				res.statusCode = 200;
+
 				res.setHeader('Content-Type',contentType);
-				let rs = fs.createReadStream(filePath);
+
+				if(isFresh(data,req,res)){
+						res.statusCode = 304;
+						res.end();
+						return;
+				}
+				let rs;
+				const {code, start, end} = range(data.size,req,res)
+					if(code===200){
+							res.statusCode = 200;
+						rs = fs.createReadStream(filePath);
+					}else{
+							res.statusCode = 206;
+							rs = fs.createReadStream(filePath,{start,end});
+					}
 
 				if(filePath.match(config.compress)){
 					rs = compress(rs,req,res)
